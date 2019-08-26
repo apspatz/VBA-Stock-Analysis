@@ -1,0 +1,188 @@
+
+Sub WSLoopEASY()
+    'Easy mode
+    For Each ws In Worksheets
+        'Creating variables
+        Dim lastrow As Long
+        lastrow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+        Dim total As Double
+        total = ws.Cells(2, 7).Value
+        Dim displaycount As Integer
+        displaycount = 2
+        
+        'Creating headers for data
+        ws.Range("J1") = "Ticker"
+        ws.Range("K1") = "Total Volume"
+            
+        For i = 2 To lastrow
+            'Adding to total volume if tickers match
+            If ws.Cells(i + 1, 1).Value = ws.Cells(i, 1).Value Then
+                total = total + ws.Cells(i + 1, 7).Value
+            Else 'If tickers don't match
+                'Printing data
+                ws.Cells(displaycount, 10) = ws.Cells(i, 1).Value
+                ws.Cells(displaycount, 11) = total
+                'Resetting for next loop
+                total = ws.Cells(i + 1, 7).Value
+                displaycount = displaycount + 1
+            End If
+        Next i
+    Next ws
+        
+End Sub
+
+Sub WSLoopMEDIUM()
+    'Moderate mode
+    For Each ws In Worksheets
+        'Creating variables
+        Dim lastrow As Long
+        lastrow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+        Dim total As Double
+        total = ws.Cells(2, 7).Value
+        Dim displaycount As Integer
+        displaycount = 2
+        Dim openprice As Double
+        openprice = ws.Cells(2, 3).Value
+        Dim closeprice As Double
+        Dim annual As Double
+        Dim percentage As Double
+        
+        
+        'Creating headers for data
+        ws.Range("J1") = "Ticker"
+        ws.Range("K1") = "Yearly Change"
+        ws.Range("L1") = "Percent Change"
+        ws.Range("M1") = "Total Volume"
+            
+        For i = 2 To lastrow
+            'Adding to total volume if tickers match
+            If ws.Cells(i + 1, 1).Value = ws.Cells(i, 1).Value Then
+                total = total + ws.Cells(i + 1, 7).Value
+            Else 'If tickers don't match
+                'Calculating Annual and Percentage Change
+                closeprice = ws.Cells(i, 6).Value
+                annual = closeprice - openprice
+                percentage = annual / openprice * 100
+                'Printing data
+                ws.Cells(displaycount, 10) = ws.Cells(i, 1).Value
+                ws.Cells(displaycount, 11) = annual
+                ws.Cells(displaycount, 12) = Str(Round(percentage, 2)) + "%"
+                ws.Cells(displaycount, 13) = total
+                'Displaying color
+                If annual < 0 Then
+                    ws.Cells(displaycount, 11).Interior.ColorIndex = 3
+                Else
+                    ws.Cells(displaycount, 11).Interior.ColorIndex = 4
+                End If
+                'Resetting for next loop
+                total = ws.Cells(i + 1, 7).Value
+                displaycount = displaycount + 1
+            End If
+        Next i
+        
+        ws.Range("J:M").Columns.AutoFit
+        
+    Next ws
+        
+End Sub
+
+Sub WSLoopHARD()
+    'Hard mode
+    For Each ws In Worksheets
+        'Creating variables
+        Dim lastrow As Long
+        lastrow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+        Dim total As Double
+        total = ws.Cells(2, 7).Value
+        Dim displaycount As Integer
+        displaycount = 2
+        Dim ticker As String
+        ticker = ws.Cells(1, 2).Value
+                
+        Dim openprice As Double
+        openprice = ws.Cells(2, 3).Value
+        Dim closeprice As Double
+        Dim annual As Double
+        Dim percentage As Double
+        
+        Dim biggain As Double
+        biggain = 0
+        Dim biggaintick As String
+        Dim biglose As Double
+        biglose = 0
+        Dim biglosetick As String
+        Dim bigtotal As Double
+        bigtotal = 0
+        Dim bigtotaltick As String
+        
+        'Creating headers for data
+        ws.Range("J1") = "Ticker"
+        ws.Range("K1") = "Yearly Change"
+        ws.Range("L1") = "Percent Change"
+        ws.Range("M1") = "Total Volume"
+        ws.Range("O2") = "Greatest % Increase"
+        ws.Range("O3") = "Greatest % Decrease"
+        ws.Range("O4") = "Greatest Total Volume"
+        ws.Range("P1") = "Ticker"
+        ws.Range("Q1") = "Value"
+            
+        For i = 2 To lastrow
+            'Adding to total volume if tickers match
+            If ws.Cells(i + 1, 1).Value = ticker Then
+                total = total + ws.Cells(i + 1, 7).Value
+            Else 'If tickers don't match
+                'Calculating Annual and Percentage Change
+                closeprice = ws.Cells(i, 6).Value
+                annual = closeprice - openprice
+                percentage = annual / openprice * 100
+                'Printing data
+                ws.Cells(displaycount, 10) = ws.Cells(i, 1).Value
+                ws.Cells(displaycount, 11) = annual
+                ws.Cells(displaycount, 12) = Str(Round(percentage, 2)) + "%"
+                ws.Cells(displaycount, 13) = total
+                'Displaying color
+                If annual < 0 Then
+                    ws.Cells(displaycount, 11).Interior.ColorIndex = 3
+                Else
+                    ws.Cells(displaycount, 11).Interior.ColorIndex = 4
+                End If
+                'Comparing values
+                If percentage > biggain Then
+                    biggain = percentage
+                    biggaintick = ticker
+                End If
+                
+                If percentage < biglose Then
+                    biglose = percentage
+                    biglosetick = ticker
+                End If
+                
+                If total > bigtotal Then
+                    bigtotal = total
+                    bigtotaltick = ticker
+                End If
+                
+                'Resetting for next loop
+                ticker = ws.Cells(i + 1, 1).Value
+                total = ws.Cells(i + 1, 7).Value
+                displaycount = displaycount + 1
+            End If
+        Next i
+        
+        ws.Range("P2").Value = biggaintick
+        ws.Range("Q2").Value = Str(Round(biggain, 2)) + "%"
+        ws.Range("P3").Value = biglosetick
+        ws.Range("Q3").Value = Str(Round(biglose, 2)) + "%"
+        ws.Range("P4").Value = bigtotaltick
+        ws.Range("Q4").Value = bigtotal
+        ws.Range("J:Q").Columns.AutoFit
+        
+    Next ws
+        
+End Sub
+
+Sub WSClearData()
+    For Each ws In Worksheets
+        ws.Range("J:Q").Clear
+    Next ws
+End Sub
